@@ -57,12 +57,21 @@ class EEGDataset1c(data.Dataset):
 
 	def __getitem__(self, index):
 		cur_tensor = torch.from_numpy(self.examples[index]).type('torch.FloatTensor')
-		cur_tensor = F.tanh(cur_tensor)
-		cur_tensor = F.relu(cur_tensor)
+
+		# tensor values must be between 0 and 1
+		# 1e3
+		# print('(torch.abs(cur_tensor).mean())', (torch.abs(cur_tensor).mean()))
+		abs_mean = (torch.abs(cur_tensor).mean())
+		if abs_mean == 0:
+			return cur_tensor
+		cur_tensor = cur_tensor/(abs_mean)
+		cur_tensor = (torch.tanh(cur_tensor) + 1)/2
+
+		# cur_tensor = (F.tanh(cur_tensor/5e2) + 1)/2
 		return cur_tensor
 
 if __name__ == "__main__":
 	files_csv = "./dataset_csv/sample_file.csv"
-	dataset = EEGDataset1c(files_csv, max_num_examples=100)
+	dataset = EEGDataset1c(files_csv, max_num_examples=100*10*2)
 	print("Length", len(dataset))
 	print("Sample Shape", dataset[0].shape)

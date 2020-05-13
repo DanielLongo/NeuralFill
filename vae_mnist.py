@@ -1,4 +1,4 @@
-
+# https://github.com/pytorch/examples/blob/master/vae/main.py
 from __future__ import print_function
 import argparse
 import torch
@@ -12,6 +12,7 @@ import numpy as np
 import sys
 sys.path.append("models/")
 sys.path.append("data/")
+from utils import save_gens_samples
 from VAE1c import VAE1c
 from load_EEGs_1c import EEGDataset1c
 from constants import *
@@ -20,12 +21,13 @@ torch.manual_seed(1)
 
 batch_size = 128
 epochs = 1000
-cuda = cuda.is_available()
+num_examples = 128*40
+cuda = torch.cuda.is_available()
 log_interval = 10
-z_dim = 20*2
+z_dim = 20
 files_csv = ALL_FILES_SEC
 
-dataset = EEGDataset1c(files_csv, max_num_examples=128*100*4, length=784)
+dataset = EEGDataset1c(files_csv, max_num_examples=num_examples, length=784)
 train_loader = data.DataLoader(dataset=dataset,
   shuffle=True,
   batch_size=batch_size,
@@ -41,37 +43,7 @@ test_loader = train_loader
 #     datasets.MNIST('./mnist', train=False, transform=transforms.ToTensor()),
 #     batch_size=args.batch_size, shuffle=True, **kwargs)
 
-
-class VAE(nn.Module):
-    def __init__(self):
-        super(VAE, self).__init__()
-
-        self.fc1 = nn.Linear(784, 400)
-        self.fc21 = nn.Linear(400, z_dim)
-        self.fc22 = nn.Linear(400, z_dim)
-        self.fc3 = nn.Linear(z_dim, 400)
-        self.fc4 = nn.Linear(400, 784)
-
-    def encode(self, x):
-        h1 = F.relu(self.fc1(x))
-        return self.fc21(h1), self.fc22(h1)
-
-    def reparameterize(self, mu, logvar):
-        std = torch.exp(0.5*logvar)
-        eps = torch.randn_like(std)
-        return mu + eps*std
-
-    def decode(self, z):
-        h3 = F.relu(self.fc3(z))
-        return torch.sigmoid(self.fc4(h3))
-
-    def forward(self, x):
-        mu, logvar = self.encode(x.view(-1, 784))
-        z = self.reparameterize(mu, logvar)
-        return self.decode(z), mu, logvar
-
-
-model = VAE().to(device)
+model = VAE1c(z_dim=z_dim)
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
 
 
@@ -93,14 +65,13 @@ def train(epoch):
     train_loss = 0
     for batch_idx, (data) in enumerate(train_loader):
     # for batch_idx, (data, _) in enumerate(test_loader):
-        data = data.to(device)
         optimizer.zero_grad()
         recon_batch, mu, logvar = model(data)
         loss = loss_function(recon_batch, data, mu, logvar)
         loss.backward()
         train_loss += loss.item()
         optimizer.step()
-        if batch_idx % args.log_interval == 0:
+        if batch_idx % log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(train_loader.dataset),
                 100. * batch_idx / len(train_loader),
@@ -115,13 +86,12 @@ def test(epoch):
     test_loss = 0
     with torch.no_grad():
         for i, (data) in enumerate(test_loader):
-            data = data.to(device)
             recon_batch, mu, logvar = model(data)
             test_loss += loss_function(recon_batch, data, mu, logvar).item()
             # if i == 0:
             #     n = min(data.size(0), 8)
             #     comparison = torch.cat([data[:n],
-            #                           recon_batch.view(args.batch_size, 1, 28, 28)[:n]])
+            #                           recon_batch.view(batch_size, 1, 28, 28)[:n]])
             #     save_image(comparison.cpu(),
             #              'results/reconstruction_' + str(epoch) + '.png', nrow=n)
 
@@ -129,11 +99,9 @@ def test(epoch):
     print('====> Test set loss: {:.4f}'.format(test_loss))
 
 if __name__ == "__main__":
-    for epoch in range(1, args.epochs + 1):
+    for epoch in range(1, epochs + 1):
         train(epoch)
+        save_filename = 'results/sample_' + str(epoch)
+        save_gens_samples(model, save_filename, z_dim, n_samples=16)
+
         # test(epoch)
-        with torch.no_grad():
-            sample = torch.randn(16, z_dim).to(device)
-            sample = model.decode(sample).cpu()
-            np.save('results/sample_' + str(epoch),
-                       sample.view(16, 784).numpy())
