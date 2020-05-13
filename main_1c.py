@@ -12,7 +12,7 @@ import numpy as np
 import sys
 sys.path.append("models/")
 sys.path.append("data/")
-from utils import save_gens_samples
+from utils import save_gens_samples, save_reconstruction
 from VAE1c import VAE1c
 from load_EEGs_1c import EEGDataset1c
 from constants import *
@@ -28,9 +28,11 @@ z_dim = 20
 files_csv = ALL_FILES_SEC
 
 dataset = EEGDataset1c(files_csv, max_num_examples=num_examples, length=784)
-train_loader = data.DataLoader(dataset=dataset,
-  shuffle=True,
-  batch_size=batch_size,
+train_loader = data.DataLoader(
+    dataset=dataset,
+    shuffle=True,
+    batch_size=batch_size,
+    pin_memory=cuda
   )
 
 test_loader = train_loader
@@ -44,13 +46,14 @@ test_loader = train_loader
 #     batch_size=args.batch_size, shuffle=True, **kwargs)
 
 model = VAE1c(z_dim=z_dim)
+if cuda:
+    model.cuda()
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
 
 
 # Reconstruction + KL divergence losses summed over all elements and batch
 def loss_function(recon_x, x, mu, logvar):
     BCE = F.binary_cross_entropy(recon_x, x.view(-1, 784), reduction='sum')
-
     # see Appendix B from VAE paper:
     # Kingma and Welling. Auto-Encoding Variational Bayes. ICLR, 2014
     # https://arxiv.org/abs/1312.6114
@@ -64,7 +67,10 @@ def train(epoch):
     model.train()
     train_loss = 0
     for batch_idx, (data) in enumerate(train_loader):
-    # for batch_idx, (data, _) in enumerate(test_loader):
+        
+        if cuda:
+            data = data.cuda()
+        
         optimizer.zero_grad()
         recon_batch, mu, logvar = model(data)
         loss = loss_function(recon_batch, data, mu, logvar)
@@ -86,14 +92,14 @@ def test(epoch):
     test_loss = 0
     with torch.no_grad():
         for i, (data) in enumerate(test_loader):
+
+            if cuda:
+                data = data.cuda()
+
             recon_batch, mu, logvar = model(data)
             test_loss += loss_function(recon_batch, data, mu, logvar).item()
-            # if i == 0:
-            #     n = min(data.size(0), 8)
-            #     comparison = torch.cat([data[:n],
-            #                           recon_batch.view(batch_size, 1, 28, 28)[:n]])
-            #     save_image(comparison.cpu(),
-            #              'results/reconstruction_' + str(epoch) + '.png', nrow=n)
+            if i == 0:
+                save_reconstruction(data.view(-1, 784)[:16], recon_batch[:16], "results/test_recon_" + str(epoch))
 
     test_loss /= len(test_loader.dataset)
     print('====> Test set loss: {:.4f}'.format(test_loss))
@@ -101,7 +107,7 @@ def test(epoch):
 if __name__ == "__main__":
     for epoch in range(1, epochs + 1):
         train(epoch)
+        test(epoch)
         save_filename = 'results/sample_' + str(epoch)
         save_gens_samples(model, save_filename, z_dim, n_samples=16)
 
-        # test(epoch)
