@@ -5,17 +5,17 @@ from torch.nn import functional as F
 # basic vae from https://github.com/pytorch/examples/blob/master/vae/main.py
 
 class VAE1c(nn.Module):
-	def __init__(self):
+	def __init__(self, z_dim=20):
 		super(VAE1c, self).__init__()
 
 		self.fc1 = nn.Linear(784, 400)
-		self.fc21 = nn.Linear(400, 20)
-		self.fc22 = nn.Linear(400, 20)
-		self.fc3 = nn.Linear(20, 400)
+		self.fc21 = nn.Linear(400, z_dim)
+		self.fc22 = nn.Linear(400, z_dim)
+		self.fc3 = nn.Linear(z_dim, 400)
 		self.fc4 = nn.Linear(400, 784)
 
 	def encode(self, x):
-		x = torch.squeeze(x)
+		# x = torch.squeeze(x)
 		h1 = F.relu(self.fc1(x))
 		return self.fc21(h1), self.fc22(h1)
 
