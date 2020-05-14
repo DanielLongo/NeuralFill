@@ -37,6 +37,11 @@ def save_reconstruction(x, x_recon, save_filename):
 	combined = np.vstack((x, x_recon))
 	np.save(save_filename, combined)
 
+def save_reconstruction_mc_to_1cOut(x, x_recon, save_filename):
+	x, x_recon = x.detach().cpu().numpy(), x_recon.detach().cpu().numpy()
+	combined = np.concatenate((x, x_recon), axis=1)
+	np.save(save_filename, combined)
+
 def save_denoise_reconstruction(x, x_noisy, x_recon, save_filename):
 	x, x_noisy, x_recon = x.detach().cpu().numpy(), x_noisy.detach().cpu().numpy(), x_recon.detach().cpu().numpy()
 	combined = np.vstack((x, x_noisy))
@@ -57,3 +62,17 @@ def custom_norm_batch(batch):
 		out.append(custom_norm(x))
 	out = torch.stack(out)
 	return out
+
+def reduce_channel_batch(batch, channel_index, a=0):
+	batch = batch.clone()
+	batch[:, channel_index, :] = batch[:, channel_index, :] * a
+	return batch
+
+def interpolate_signals(a, b):
+	z = (a + b)/2
+	return z
+
+
+
+
+
