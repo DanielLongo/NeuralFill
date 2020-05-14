@@ -1,4 +1,3 @@
-# https://github.com/pytorch/examples/blob/master/vae/main.py
 from __future__ import print_function
 import argparse
 import torch
@@ -11,22 +10,24 @@ import sys
 sys.path.append("../")
 sys.path.append("../models/")
 sys.path.append("../data/")
-from utils import save_gens_samples, save_reconstruction, loss_function_vanilla
-from VAE1c import VAE1c
-from load_EEGs_1c import EEGDataset1c
+from utils import save_gens_samples_mc, save_reconstruction, loss_function_vanilla
+from conv_VAE import ConvVAE
+from load_EEGs_mc import EEGDatasetMc
 from constants import *
 
 torch.manual_seed(1)
 
 batch_size = 128
 epochs = 1000
-num_examples = 128*4
+num_examples = 128*40
 cuda = torch.cuda.is_available()
 log_interval = 10
-z_dim = 20
+z_dim = 32
 files_csv = ALL_FILES_SEC
+num_channels = 3
+select_channels = list(range(num_channels))
 
-dataset = EEGDataset1c(files_csv, max_num_examples=num_examples, length=784)
+dataset = EEGDatasetMc(files_csv, max_num_examples=num_examples, length=784, select_channels=select_channels)
 train_loader = data.DataLoader(
     dataset=dataset,
     shuffle=True,
@@ -36,7 +37,7 @@ train_loader = data.DataLoader(
 
 eval_loader = train_loader
 
-model = VAE1c(z_dim=z_dim)
+model = ConvVAE(num_channels=num_channels)
 
 if cuda:
     model.cuda()
@@ -80,7 +81,7 @@ def eval(epoch):
             recon_batch, mu, logvar = model(data)
             eval_loss += loss_function_vanilla(recon_batch, data, mu, logvar).item()
             if i == 0:
-                save_reconstruction(data.view(-1, 784)[:16], recon_batch[:16], "results_recon/eval_recon_" + str(epoch))
+                save_reconstruction(data[:16], recon_batch[:16], "results_recon/mc_conv_eval_recon_" + str(epoch))
 
     eval_loss /= len(eval_loader.dataset)
     print('====> eval set loss: {:.4f}'.format(eval_loss))
@@ -89,6 +90,6 @@ if __name__ == "__main__":
     for epoch in range(1, epochs + 1):
         train(epoch)
         eval(epoch)
-        save_filename = 'results_recon/sample_' + str(epoch)
-        save_gens_samples(model, save_filename, z_dim, n_samples=16)
+        save_filename = 'results_recon/mc_conv_sample_' + str(epoch)
+        save_gens_samples_mc(model, save_filename, z_dim, n_samples=16)
 

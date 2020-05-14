@@ -21,7 +21,7 @@ torch.manual_seed(1)
 
 batch_size = 128
 epochs = 1000
-num_examples = 128*4
+num_examples = 128*40
 cuda = torch.cuda.is_available()
 log_interval = 10
 z_dim = 20

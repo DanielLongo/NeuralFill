@@ -23,7 +23,7 @@ class SyntheticArtifiacts1c(data.Dataset):
 		return len(self.examples)
 
 	def __getitem__(self, index):
-		cur_tensor = torch.from_numpy(self.examples[index])
+		cur_tensor = torch.from_numpy(self.examples[index]).type('torch.FloatTensor')
 		return cur_tensor
 
 
