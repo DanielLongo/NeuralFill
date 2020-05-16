@@ -15,13 +15,14 @@ from utils import save_gens_samples, save_denoise_reconstruction, loss_function_
 from VAE1c import VAE1c
 from load_EEGs_1c import EEGDataset1c
 from synthetic_artifacts_1c import SyntheticArtifiacts1c 
+from blink_1c import Blink1c
 from constants import *
 
 torch.manual_seed(1)
 
 batch_size = 128
 epochs = 1000
-num_examples = 128*40
+num_examples = 128*4
 cuda = torch.cuda.is_available()
 log_interval = 10
 z_dim = 20
@@ -37,7 +38,9 @@ train_loader = data.DataLoader(
 
 eval_loader = train_loader
 
-artifacts = SyntheticArtifiacts1c(batch_size*1, length=784)
+# artifacts = SyntheticArtifiacts1c(batch_size*1, length=784)
+artifacts = Blink1c(batch_size*1, length=784)
+
 artifacts_loader = data.DataLoader(
 	dataset=artifacts,
 	shuffle=True,
@@ -71,8 +74,8 @@ def train(epoch):
 		if cuda:
 			data, cur_artifact = data.cuda(), cur_artifact.cuda()
 
-		data_noisy = data + cur_artifact
-		data_noisy = custom_norm_batch(data_noisy)
+		data_noisy = (data + cur_artifact)/2
+		# data_noisy = custom_norm_batch(data_noisy)
 		
 		optimizer.zero_grad()
 		recon_batch, mu, logvar = model(data_noisy)
@@ -88,7 +91,7 @@ def train(epoch):
 				loss.item() / len(data)))
 
 		if batch_idx == 0:
-			save_denoise_reconstruction(data.view(-1, 784)[:16], data_noisy.view(-1, 784)[:16], recon_batch[:16], "results_denoise/" + str(epoch) + "_train_recon")
+			save_denoise_reconstruction(data.view(-1, 784)[:16], data_noisy.view(-1, 784)[:16], recon_batch[:16], "results_denoise/" + str(epoch) + "_blink_train_recon")
 
 	print('====> Epoch: {} Average loss: {:.4f}'.format(
 		  epoch, train_loss / len(train_loader.dataset)))
@@ -111,13 +114,13 @@ def eval(epoch):
 			if cuda:
 				data, cur_artifact = data.cuda(), cur_artifact.cuda()
 
-			data_noisy = data + cur_artifact
-			data_noisy = custom_norm_batch(data_noisy)
+			data_noisy = (data + cur_artifact)/2
+			# data_noisy = custom_norm_batch(data_noisy)
 
 			recon_batch, mu, logvar = model(data_noisy)
 			eval_loss += loss_function_vanilla(recon_batch, data, mu, logvar).item()
 			if batch_idx == 0:
-				save_denoise_reconstruction(data.view(-1, 784)[:16], data_noisy.view(-1, 784)[:16], recon_batch[:16], "results_denoise/" + str(epoch) + "_eval_recon")
+				save_denoise_reconstruction(data.view(-1, 784)[:16], data_noisy.view(-1, 784)[:16], recon_batch[:16], "results_denoise/" + str(epoch) + "_blink_eval_recon")
 
 	eval_loss /= len(eval_loader.dataset)
 	print('====> eval set loss: {:.4f}'.format(eval_loss))
@@ -126,5 +129,5 @@ if __name__ == "__main__":
 	for epoch in range(1, epochs + 1):
 		train(epoch)
 		eval(epoch)
-		save_filename = 'results_denoise/sample_' + str(epoch)
+		save_filename = 'results_denoise/blink_sample_' + str(epoch)
 		save_gens_samples(model, save_filename, z_dim, n_samples=16)
