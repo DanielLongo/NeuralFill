@@ -19,7 +19,7 @@ torch.manual_seed(1)
 
 batch_size = 128
 epochs = 1000
-num_examples = 128*40
+num_examples = 128*4
 cuda = torch.cuda.is_available()
 log_interval = 10
 z_dim = 32
@@ -92,4 +92,6 @@ if __name__ == "__main__":
         eval(epoch)
         save_filename = 'results_recon/mc_conv_sample_' + str(epoch)
         save_gens_samples_mc(model, save_filename, z_dim, n_samples=16)
+        if epoch % 50 == 0:
+            torch.save(model, "saved_models/1a_conv_mc")
 

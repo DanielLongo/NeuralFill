@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 from torch.nn import functional as F
+import os
 
 # Reconstruction + KL divergence losses summed over all elements and batch
 def loss_function_vanilla(recon_x, x, mu, logvar):
@@ -72,6 +73,12 @@ def interpolate_signals(a, b):
 	z = (a + b)/2
 	return z
 
+def find_valid_filename(target_filename, file_dir):
+	if os.path.exists(file_dir + target_filename):
+		if str.isnumeric(target_filename[-1]) and target_filename[-3:-1] == '_r':
+			return find_valid_filename(target_filename[:-1] + str(int(target_filename[-1]) + 1), file_dir)
+		return find_valid_filename(target_filename + '_r1', file_dir)
+	return target_filename
 
 
 
