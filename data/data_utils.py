@@ -3,15 +3,16 @@ import os
 import h5py
 
 def load_eeg_file(filename):
-    hdf = h5py.File(filename, "r")
-    atributes = hdf["patient"].attrs
-    rec = hdf["record-0"]
-    signals = rec["signals"]
-    specs = {
-        "sample_frequency": rec.attrs["sample_frequency"],
-        "number_channels": rec.attrs["number_channels"]
-    }
-    return signals, specs
+	hdf = h5py.File(filename, "r")
+	atributes = hdf["patient"].attrs
+	rec = hdf["record-0"]
+	print("KJHFKJVHSKDLJHF", list(rec['signal_labels'])[:4])
+	signals = rec["signals"]
+	specs = {
+		"sample_frequency": rec.attrs["sample_frequency"],
+		"number_channels": rec.attrs["number_channels"]
+	}
+	return signals, specs
 
 def get_eeghdf_files(data_dir):
 	all_files = os.listdir(data_dir)

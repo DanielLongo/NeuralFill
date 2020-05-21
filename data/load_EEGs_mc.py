@@ -42,6 +42,7 @@ class EEGDatasetMc(data.Dataset):
 
 	def load_signals(self, filename, start_pos):
 		all_signals, specs = load_eeg_file(filename)
+		print("specs", specs)
 
 		if (self.target_freq != -1) and (int(specs["sample_frequency"]) != self.target_freq):
 			return None

@@ -33,7 +33,7 @@ params = {
     "num_examples_eval": -1, #128*10,
     "cuda": torch.cuda.is_available(),
     "log_interval": 1e100,
-    "z_dim": 64,
+    "z_dim": 60, # must be multiple of 10 b/c k=10
     "length": 784,
     "tensorboard_log_interval": 25,
     "run_filename": run_filename,
