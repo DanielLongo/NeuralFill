@@ -42,9 +42,9 @@ def save_reconstruction(x, x_recon, save_filename):
 	combined = np.vstack((x, x_recon))
 	np.save(save_filename, combined)
 
-def save_reconstruction_mc_to_1cOut(x, x_recon, save_filename):
+def save_reconstruction_mc_to_1cOut(x, x_recon, save_filename, axis=1):
 	x, x_recon = x.detach().cpu().numpy(), x_recon.detach().cpu().numpy()
-	combined = np.concatenate((x, x_recon), axis=1)
+	combined = np.concatenate((x, x_recon), axis=axis)
 	np.save(save_filename, combined)
 
 def save_denoise_reconstruction(x, x_noisy, x_recon, save_filename):
