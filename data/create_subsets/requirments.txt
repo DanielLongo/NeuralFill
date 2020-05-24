@@ -1,0 +1,19 @@
+
+dynaconf
+#-e git+https://github.com/cleemesser/python-edf#egg=edflib
+### !pip install edflib  # get from pypi
+edflib
+git+https://github.com/eegml/eeghdf.git#egg=eeghdf
+git+https://github.com/eegml/eegvis.git#egg=eegvis
+git+https://github.com/eegml/eegml-signal.git#egg=eegml_signal
+
+
+# pytorch      # supplied by conda usually
+# torchvision
+# torchaudio
+# numpy
+# ipython
+# jupyter
+# ipykernel
+# xarray
+# black
