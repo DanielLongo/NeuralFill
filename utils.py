@@ -27,6 +27,14 @@ def save_gens_samples(model, save_filename, z_dim, n_samples=16, cuda=torch.cuda
 		np.save(save_filename,
 				   sample.view(16, 784).numpy())
 
+def get_gens_samples(model, z_dim, n_samples=16, cuda=torch.cuda.is_available()):
+	with torch.no_grad():
+		sample = torch.randn(n_samples, z_dim)
+		if cuda:
+			sample = sample.cuda()
+		sample = model.decode(sample).cpu()
+		return sample.view(16, 784).numpy()
+
 def save_gens_samples_mc(model, save_filename, z_dim, n_samples=16, cuda=torch.cuda.is_available()):
 	with torch.no_grad():
 		sample = torch.randn(n_samples, 1, z_dim)

@@ -22,7 +22,7 @@ from load_EEGs_1c import EEGDataset1c
 from constants import *
 
 torch.manual_seed(1)
-target_filename = "nn-vq_s_1c"
+target_filename = "normal_nn-s_1c"
 run_filename = find_valid_filename(target_filename, HOME_PATH + 'reconstruction/runs/')
 print("Run Filname:", run_filename)
 
@@ -30,13 +30,13 @@ print("Run Filname:", run_filename)
 params = {
     "batch_size": 128,
     "epochs": 1000,
-    "num_examples_train": 128*4,
-    "num_examples_eval": 128*2,
+    "num_examples_train": -1 ,#128*4,
+    "num_examples_eval": -1,#128*2,
     "cuda": torch.cuda.is_available(),
     "log_interval": -1,
     "z_dim": 20,
     "length": 784,
-    "tensorboard_log_interval": 25,
+    "tensorboard_log_interval": 1,
     "run_filename": run_filename,
     "lr" : 1e-3
 }
@@ -44,7 +44,9 @@ params = {
 model_save_filename = "saved_models/" + run_filename
 writer = SummaryWriter('runs/' + run_filename)
 
-train_dataset = EEGDataset1c(TRAIN_FILES_CSV, max_num_examples=params["num_examples_train"], length=params["length"])
+# train_files = TRAIN_FILES_CSV
+train_files = TRAIN_NORMAL_FILES_CSV
+train_dataset = EEGDataset1c(train_files, max_num_examples=params["num_examples_train"], length=params["length"])
 train_loader = data.DataLoader(
     dataset=train_dataset,
     shuffle=True,
@@ -52,7 +54,9 @@ train_loader = data.DataLoader(
     pin_memory=params["cuda"]
   )
 
-eval_dataset = EEGDataset1c(DEV_FILES_CSV, max_num_examples=params["num_examples_eval"], length=params["length"])
+# eval_files = DEV_FILES_CSV
+eval_files = DEV_NORMAL_FILES_CSV
+eval_dataset = EEGDataset1c(eval_files, max_num_examples=params["num_examples_eval"], length=params["length"])
 eval_loader = data.DataLoader(
     dataset=eval_dataset,
     shuffle=True,
@@ -60,9 +64,9 @@ eval_loader = data.DataLoader(
     pin_memory=params["cuda"]
   )
 
-# model = VAE1c(z_dim=params["z_dim"])
+model = VAE1c(z_dim=params["z_dim"])
 # model = VAE1cM(z_dim=params["z_dim"])
-model = ConvVAE(num_channels=1, z_dim=params["z_dim"])
+# model = ConvVAE(num_channels=1, z_dim=params["z_dim"])
 
 if params["cuda"]:
     model.cuda()
@@ -86,7 +90,7 @@ def train(epoch):
         train_loss += loss.item()
         running_loss += loss.item()
         optimizer.step()
-        if batch_idx % params["tensorboard_log_interval"] == params["tensorboard_log_interval"] - 2:
+        if batch_idx % params["tensorboard_log_interval"] == params["tensorboard_log_interval"] - 1:
             hist_diff, spec_diff = get_metrics(model, dataset=train_dataset, z_dim=params["z_dim"], n_dataset=100, n_model=100, print_results=False)
 
             iteration = epoch * len(train_loader) + batch_idx

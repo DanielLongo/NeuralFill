@@ -11,7 +11,7 @@ class EEGDataset1c(data.Dataset):
 	def __init__(self, files_csv, max_num_examples=-1, length=1000, target_freq=200):
 
 		# since all data is only one channel only takes the selected channel
-		self.select_channel = 0
+		self.select_channel = 10 #0
 		self.target_freq = target_freq # -1 for everything
 		self.length = length
 		self.max_num_examples = max_num_examples
