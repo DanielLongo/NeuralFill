@@ -33,6 +33,17 @@ class VAE1c(nn.Module):
 		z = self.reparameterize(mu, logvar)
 		return self.decode(z), mu, logvar
 
+	def loss_function(self, signals, outputs):
+		recon_x, mu, logvar = outputs
+		BCE = F.binary_cross_entropy(recon_x.view(recon_x.shape[0], -1), signals.view(signals.shape[0], -1)) # , reduction='sum')
+		
+		# see Appendix B from VAE paper:
+		# Kingma and Welling. Auto-Encoding Variational Bayes. ICLR, 2014
+		# https://arxiv.org/abs/1312.6114
+		# 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
+		KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+		return BCE + KLD
+
 if __name__ == "__main__":
 	model = VAE1c()
 	sample_input = torch.zeros((64, 1, 784))

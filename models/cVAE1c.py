@@ -53,6 +53,12 @@ class cVAE1c(nn.Module):
 		
 		return self.decode(z), mu, logvar
 
+	def loss_function(self, signals, outputs):
+		recon_x, mu, logvar = outputs
+		BCE = F.binary_cross_entropy(recon_x.view(recon_x.shape[0], -1), signals.view(signals.shape[0], -1)) # , reduction='sum')
+		KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+		return BCE + KLD
+
 if __name__ == "__main__":
 	model = cVAE1c()
 	# sample_y = torch.zeros((64, 2, 784))

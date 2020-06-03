@@ -8,10 +8,11 @@ from data_utils import load_eeg_file, get_recordings_from_csv
 
 class EEGDataset1c(data.Dataset):
 
-	def __init__(self, files_csv, max_num_examples=-1, length=1000, target_freq=200):
+	def __init__(self, files_csv, max_num_examples=-1, length=1000, target_freq=200, normalize=False):
 
 		# since all data is only one channel only takes the selected channel
 		self.select_channel = 10 #0
+		self.normalize = normalize
 		self.target_freq = target_freq # -1 for everything
 		self.length = length
 		self.max_num_examples = max_num_examples
@@ -20,6 +21,7 @@ class EEGDataset1c(data.Dataset):
 		self.recordings = get_recordings_from_csv(files_csv)
 
 		self.load_examples()
+
 
 	def load_examples(self):
 		for recording in self.recordings:
@@ -57,16 +59,19 @@ class EEGDataset1c(data.Dataset):
 		return len(self.examples)
 
 	def __getitem__(self, index):
-		cur_tensor = torch.from_numpy(self.examples[index]).type('torch.FloatTensor')
+		cur_tensor = torch.from_numpy(self.examples[index]).type('torch.FloatTensor') / 1
+
 
 		# tensor values must be between 0 and 1
 		# 1e3
 		# print('(torch.abs(cur_tensor).mean())', (torch.abs(cur_tensor).mean()))
-		abs_mean = (torch.abs(cur_tensor).mean())
-		if abs_mean == 0:
-			return cur_tensor
-		cur_tensor = cur_tensor/(abs_mean)
-		cur_tensor = (torch.tanh(cur_tensor) + 1)/2
+
+		if self.normalize:
+			abs_mean = (torch.abs(cur_tensor).mean())
+			if abs_mean == 0:
+				return cur_tensor
+			cur_tensor = cur_tensor/(abs_mean)
+			cur_tensor = (torch.tanh(cur_tensor) + 1)/2
 
 		# cur_tensor = (F.tanh(cur_tensor/5e2) + 1)/2
 		return cur_tensor

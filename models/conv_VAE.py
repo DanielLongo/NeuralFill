@@ -22,7 +22,7 @@ class TransformToOriginal(nn.Module):
 
 class Transform3D(nn.Module):
 	def forward(self, input):
-		return input.view(input.size(0), input.size(1), 28, 28)
+		return input.view(input.size(0), -1, 28, 28)
 
 
 class ConvVAE(nn.Module):
@@ -90,6 +90,12 @@ class ConvVAE(nn.Module):
 	def decode(self, z):
 		a = self.fc3(z)
 		return self.decoder(a)
+
+	def loss_function(self, signals, outputs):
+		recon_x, mu, logvar = outputs
+		BCE = F.binary_cross_entropy(recon_x.view(recon_x.shape[0], -1), signals.view(signals.shape[0], -1)) # , reduction='sum')
+		KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+		return BCE + KLD
 
 
 if __name__ == "__main__":

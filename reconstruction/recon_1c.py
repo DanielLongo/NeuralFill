@@ -27,12 +27,12 @@ from vqvae import VQVAE_2
 from VQ_VAE_1c import VQVAE
 
 def main():
-	model_name = "vq-2"
+	model_name = "nn"
 	z_dim = 30
 	lr = 1e-3
 	sched = None
 
-	num_epochs = 20
+	num_epochs = 1000
 	batch_size = 64
 	num_examples_train = -1
 	num_examples_eval = -1

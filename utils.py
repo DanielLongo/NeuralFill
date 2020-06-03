@@ -7,7 +7,8 @@ import os
 def loss_function_vanilla(recon_x, x, mu, logvar):
 	# print("recon_x shape", recon_x.shape)
 	# print("x shape", x.shape)
-	BCE = F.binary_cross_entropy(recon_x.view(recon_x.shape[0], -1), x.view(x.shape[0], -1), reduction='sum')
+	BCE = F.binary_cross_entropy(recon_x.view(recon_x.shape[0], -1), x.view(x.shape[0], -1))#, reduction='sum')
+	# BCE = F.mse_loss(recon_x.view(recon_x.shape[0], -1), x.view(x.shape[0], -1))
 	# BCE = F.binary_cross_entropy(recon_x, x.view(-1, 784), reduction='sum')
 	
 	# see Appendix B from VAE paper:

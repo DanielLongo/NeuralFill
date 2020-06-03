@@ -91,3 +91,31 @@ def get_metrics(model, dataset, z_dim, n_dataset=100, n_model=100, print_results
 
 	return hist_diff, spec_diff
 
+def get_recon_diff_fft(x, recon_x):
+	fft_x = np.fft.fft(x)
+	fft_recon_x = np.fft.fft(recon_x)
+
+	fft_x /= np.sum(fft_x)
+	fft_recon_x /= np.sum(fft_recon_x)
+	
+	return (np.sum(abs(fft_x - fft_recon_x)))
+
+
+def get_recon_diff_hist(x, recon_x, n_bins=50):
+	signals_a = x.reshape(-1)
+	signals_b = recon_x.reshape(-1)
+	hist_a, _ = np.histogram(signals_a, bins=n_bins)
+	hist_b, _ = np.histogram(signals_b, bins=n_bins)
+	
+	hist_a = hist_a / np.linalg.norm(hist_a)
+	hist_b = hist_b / np.linalg.norm(hist_b)
+	
+	return np.sum(np.abs(hist_a - hist_b))
+
+def get_recon_metrics(x, recon_x):
+	fft_diff = get_recon_diff_fft(x, recon_x)
+	hist_diff = get_recon_diff_hist(x, recon_x)
+	return fft_diff, hist_diff
+
+
+

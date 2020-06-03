@@ -22,11 +22,11 @@ from metrics_utils import get_recon_metrics
 from load_EEGs_1c import EEGDataset1c
 from utils import find_valid_filename
 from constants import *
-from vqvae import VQVAE
+from vqvae import VQVAE_2
 from scheduler import CycleScheduler
 
 
-def train(epoch, loader, model, optimizer, scheduler, device, writer, log_interval=100):
+def train(epoch, loader, model, optimizer, scheduler, device, writer, log_interval=10):
 	model.train()
 	loader = tqdm(loader)
 
@@ -95,7 +95,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, writer, log_interv
 			running_loss = 0
 			model.train()
 
-def eval(epoch, loader, model, device, writer, log_interval=100):
+def eval(epoch, loader, model, device, writer, log_interval=10):
 	model.eval()
 
 	loader = tqdm(loader)
@@ -194,7 +194,7 @@ if __name__ == '__main__':
 	run_filename = find_valid_filename(target_filename, HOME_PATH + 'reconstruction/runs/')
 	writer = SummaryWriter('runs/' + run_filename)
 
-	model = VQVAE(in_channel=1).to(device)
+	model = VQVAE_2(in_channel=1).to(device)
 
 	optimizer = optim.Adam(model.parameters(), lr=args.lr)
 	scheduler = None

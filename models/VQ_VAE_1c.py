@@ -12,10 +12,12 @@ from torch.nn import functional as F
 from nearest_embed import NearestEmbed, NearestEmbedEMA
 
 
-class VQ_VAE(nn.Module):
+class VQVAE(nn.Module):
     """Vector Quantized AutoEncoder for mnist (originally)"""
     def __init__(self, length=784, hidden=200, k=10, vq_coef=0.2, comit_coef=0.4, **kwargs):
-        super(VQ_VAE, self).__init__()
+        super(VQVAE, self).__init__()
+
+        assert(hidden % 10 == 0), "Hidden must be divisible by 10"
 
         self.length = length
 
@@ -61,10 +63,9 @@ class VQ_VAE(nn.Module):
         sample = self.decode(emb(sample).view(-1, self.hidden)).cpu()
         return sample
 
-    def loss_function(self, x, recon_x, z_e, emb):
-        # print(torch.sum(abs(x)))
-        self.ce_loss = F.binary_cross_entropy(recon_x, x.view(-1, self.length), reduction='sum')
-        # print("z_e.detach()", z_e.detach().shape)
+    def loss_function(self, signals, outputs):
+        recon_x, z_e, emb = outputs
+        self.ce_loss = F.binary_cross_entropy(recon_x, signals.view(-1, self.length))#, reduction='sum')
         self.vq_loss = F.mse_loss(emb, z_e.detach().view(emb.shape[0], -1))
         self.commit_loss = F.mse_loss(z_e.view(emb.shape[0], -1), emb.detach())
 
@@ -74,7 +75,7 @@ class VQ_VAE(nn.Module):
         return {'cross_entropy': self.ce_loss, 'vq': self.vq_loss, 'commitment': self.commit_loss}
 
 if __name__ == "__main__":
-    model = VQ_VAE()
+    model = VQVAE()
     x = torch.zeros((64, 784))
     print(x.shape)
     model(x)

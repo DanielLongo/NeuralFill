@@ -21,9 +21,9 @@ from constants import *
 
 torch.manual_seed(1)
 
-batch_size = 128
+batch_size = 64
 epochs = 1000
-num_examples = 128*4
+num_examples = -1 
 cuda = torch.cuda.is_available()
 log_interval = 10
 z_dim = 32

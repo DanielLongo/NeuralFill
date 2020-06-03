@@ -13,21 +13,21 @@ sys.path.append("../")
 sys.path.append("../models/")
 sys.path.append("../data/")
 sys.path.append("../metrics/")
-from metrics_utils import get_metrics
+from metrics_utils import get_metrics, get_recon_metrics
 from utils import save_gens_samples, save_reconstruction, loss_function_vanilla, find_valid_filename
-from VQ_VAE_1c import VQ_VAE
+from VQ_VAE_1c import VQVAE
 from load_EEGs_1c import EEGDataset1c
 from constants import *
 
 torch.manual_seed(1)
-target_filename = "nn-vq_s_1c"
+target_filename = "vq"
 runs_dir = "runs"
 run_filename = find_valid_filename(target_filename, HOME_PATH + 'reconstruction/' + runs_dir + '/')
 print("Run Filname:", run_filename)
 
 
 params = {
-    "batch_size": 128,
+    "batch_size": 4,
     "epochs": 1000,
     "num_examples_train": -1, #128*40,
     "num_examples_eval": -1, #128*10,
@@ -35,15 +35,15 @@ params = {
     "log_interval": 1e100,
     "z_dim": 60, # must be multiple of 10 b/c k=10
     "length": 784,
-    "tensorboard_log_interval": 25,
+    "tensorboard_log_interval": 3,
     "run_filename": run_filename,
-    "lr" : 1e-4
+    "lr" : 1e-3
 }
 
 model_save_filename = "saved_models/" + run_filename
 writer = SummaryWriter(runs_dir + '/' + run_filename)
 
-train_dataset = EEGDataset1c(TRAIN_FILES_CSV, max_num_examples=params["num_examples_train"], length=params["length"])
+train_dataset = EEGDataset1c(TRAIN_NORMAL_FILES_CSV, max_num_examples=params["num_examples_train"], length=params["length"], normalize=True)
 train_loader = data.DataLoader(
     dataset=train_dataset,
     shuffle=True,
@@ -51,7 +51,7 @@ train_loader = data.DataLoader(
     pin_memory=params["cuda"]
   )
 
-eval_dataset = EEGDataset1c(DEV_FILES_CSV, max_num_examples=params["num_examples_eval"], length=params["length"])
+eval_dataset = EEGDataset1c(DEV_NORMAL_FILES_CSV, max_num_examples=params["num_examples_eval"], length=params["length"], normalize=True)
 eval_loader = data.DataLoader(
     dataset=eval_dataset,
     shuffle=True,
@@ -59,7 +59,7 @@ eval_loader = data.DataLoader(
     pin_memory=params["cuda"]
   )
 
-model = VQ_VAE(hidden=params["z_dim"])
+model = VQVAE(hidden=params["z_dim"])
 
 if params["cuda"]:
     model.cuda()
@@ -89,13 +89,19 @@ def train(epoch):
         optimizer.step()
 
         if batch_idx % params["tensorboard_log_interval"] == params["tensorboard_log_interval"] - 2:
-            hist_diff, spec_diff = get_metrics(model, dataset=train_dataset, z_dim=params["z_dim"], n_dataset=100, n_model=100, print_results=False)
 
             iteration = epoch * len(train_loader) + batch_idx
-            
+
+            fft_diff, hist_diff = get_recon_metrics(outputs[0].detach().cpu(), data.detach().cpu())
+            writer.add_scalar('train/fft diff', fft_diff, iteration)
             writer.add_scalar('train/hist diff', hist_diff, iteration)
-            writer.add_scalar('train/spec diff', spec_diff, iteration)
             writer.add_scalar('train/loss', running_loss / params["tensorboard_log_interval"], iteration)
+
+
+            # hist_diff, spec_diff = get_metrics(model, dataset=train_dataset, z_dim=params["z_dim"], n_dataset=100, n_model=100, print_results=False)
+            # writer.add_scalar('train/hist diff', hist_diff, iteration)
+            # writer.add_scalar('train/spec diff', spec_diff, iteration)
+            # writer.add_scalar('train/loss', running_loss / params["tensorboard_log_interval"], iteration)
                 
             running_loss = 0.0
 
@@ -126,15 +132,20 @@ def eval(epoch):
             eval_loss += latest_losses["cross_entropy"].item()
             running_loss += latest_losses["cross_entropy"].item()
             
-            if batch_idx % params["tensorboard_log_interval"] == params["tensorboard_log_interval"] - 1:
-                hist_diff, spec_diff = get_metrics(model, dataset=eval_dataset, z_dim=params["z_dim"], n_dataset=100, n_model=100, print_results=False)
+            if batch_idx % params["tensorboard_log_interval"] == 0:# params["tensorboard_log_interval"]: # - 1:
 
 
                 iteration = epoch * len(eval_loader) + batch_idx
-                
+
+                fft_diff, hist_diff = get_recon_metrics(outputs[0].detach().cpu(), data.detach().cpu())
+                writer.add_scalar('eval/fft diff', fft_diff, iteration)
                 writer.add_scalar('eval/hist diff', hist_diff, iteration)
-                writer.add_scalar('eval/spec diff', spec_diff, iteration)
                 writer.add_scalar('eval/loss', running_loss / params["tensorboard_log_interval"], iteration)
+                
+                # hist_diff, spec_diff = get_metrics(model, dataset=eval_dataset, z_dim=params["z_dim"], n_dataset=100, n_model=100, print_results=False)
+                # writer.add_scalar('eval/hist diff', hist_diff, iteration)
+                # writer.add_scalar('eval/spec diff', spec_diff, iteration)
+                # writer.add_scalar('eval/loss', running_loss / params["tensorboard_log_interval"], iteration)
 
 
                 running_loss = 0.0
