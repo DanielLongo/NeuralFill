@@ -12,8 +12,9 @@ from utils import custom_norm_batch
 
 class EEGDatasetMc(data.Dataset):
 
-	def __init__(self, files_csv, select_channels=[0,1,3], max_num_examples=-1, length=1000, target_freq=200):
+	def __init__(self, files_csv, select_channels=[0,1,3], max_num_examples=-1, length=1000, target_freq=200, normalize=False):
 
+		self.normalize = normalize
 		# since all data is only one channel only takes the selected channel
 		self.select_channels = select_channels
 		self.target_freq = target_freq # -1 for everything
@@ -65,7 +66,9 @@ class EEGDatasetMc(data.Dataset):
 
 	def __getitem__(self, index):
 		cur_tensor = torch.from_numpy(self.examples[index]).type('torch.FloatTensor')
-		return custom_norm_batch(cur_tensor)
+		if self.normalize:
+			return custom_norm_batch(cur_tensor)
+		return cur_tensor
 
 
 if __name__ == "__main__":

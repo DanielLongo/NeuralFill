@@ -117,5 +117,28 @@ def get_recon_metrics(x, recon_x):
 	hist_diff = get_recon_diff_hist(x, recon_x)
 	return fft_diff, hist_diff
 
+def save_checkpoint_metrics(writer, model, sample, save_filename, epoch, iteration, loss, recon_loss, prefix, sample_size=16):
+	with torch.no_grad():
+		out = model(sample)
+		reconstructed = out[0]
+		reconstructed, sample = torch.squeeze(reconstructed).cpu().numpy(), torch.squeeze(sample).cpu().numpy()
+		# reconstructed, sample = reconstructed.view(reconstructed.shape[0], -1).cpu().numpy(), sample.view(reconstructed.shape[0], -1).cpu().numpy()
+
+		if len(sample.shape) == 3:
+			# the sample has multiple channels so must expand dim of reconstructed for vstack
+			reconstructed = reconstructed.reshape((reconstructed.shape[0], 1, -1))
+			combined = np.concatenate((sample[:sample_size], reconstructed[:sample_size]), axis=1)
+
+		else:
+			combined = np.vstack((sample[:sample_size], reconstructed[:sample_size]))
+
+		np.save(save_filename + "-" + prefix + "-" + str(epoch), combined)
+
+		fft_diff, hist_diff = get_recon_metrics(reconstructed, sample)
+
+		writer.add_scalar(prefix + '/fft diff', fft_diff, iteration)
+		writer.add_scalar(prefix + '/hist diff', hist_diff, iteration)
+		writer.add_scalar(prefix + '/recon loss', recon_loss, iteration)
+		writer.add_scalar(prefix + '/loss', loss, iteration)
 
 
