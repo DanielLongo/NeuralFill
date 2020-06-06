@@ -14,6 +14,7 @@ sys.path.append("../models/vq-vae-2-pytorch/")
 sys.path.append("../data/")
 sys.path.append("../metrics/")
 
+from scheduler import CycleScheduler
 from metrics_utils import get_metrics, get_recon_metrics
 from utils import save_gens_samples, save_reconstruction, loss_function_vanilla, find_valid_filename
 from load_EEGs_1c import EEGDataset1c

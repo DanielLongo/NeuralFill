@@ -25,7 +25,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, writer, log_interv
 	for i, (signals) in enumerate(loader):
 		model.zero_grad()
 
-		signals = signals.to(device).view(signals.shape[0], 3, -1)
+		signals = signals.to(device).view(signals.shape[0], signals.shape[1], -1)
 		target_channel = signals[:, 1, :]
 		signals_reduced = reduce_channel_batch(signals, 1, a=0) # reduce middle channel to 0
 		
@@ -90,7 +90,7 @@ def eval(epoch, loader, model, device, writer, log_interval=10,  criterion=nn.L1
 	with torch.no_grad():
 		for i, (signals) in enumerate(loader):
 			
-			signals = signals.to(device).view(signals.shape[0], 3, -1)
+			signals = signals.to(device).view(signals.shape[0], signals.shape[1], -1)
 			target_channel = signals[:, 1, :]
 			signals_reduced = reduce_channel_batch(signals, 1, a=0) # reduce middle channel to 0
 

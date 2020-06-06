@@ -14,6 +14,7 @@ sys.path.append("../models/vq-vae-2-pytorch/")
 sys.path.append("../data/")
 sys.path.append("../metrics/")
 
+from scheduler import CycleScheduler
 from metrics_utils import get_metrics, get_recon_metrics
 from utils import save_gens_samples, save_reconstruction, loss_function_vanilla, find_valid_filename
 from load_EEGs_mc import EEGDatasetMc
@@ -22,19 +23,19 @@ from train_fill_1c import train, eval
 
 
 # from conv_VAE import cConvVAE
-from fill_baseline_models import AvgInterpolation
+from fill_baseline_models import AvgInterpolation, MNEInterpolation
 from cVAE1c import cVAE1c
 from cvqvae import cVQVAE_2
 # from VQ_VAE_1c import cVQVAE
 
 def main():
-	model_name = "vq-2"
+	model_name = "nn"
 	z_dim = 30
 	lr = 1e-3
-	sched = None
+	sched = 'cycle'
 
-	num_epochs = 1000
-	batch_size = 128
+	num_epochs = 400
+	batch_size = 64
 	num_examples_train = -1
 	num_examples_eval = -1
 	
@@ -49,19 +50,24 @@ def main():
 		"vq" : 784,
 		"vq-2" : 1024,
 		"avg-interp" : 784,
+		"mne-interp" : 784,
 	}
 
 	models = {
 		"nn" : cVAE1c(z_dim=z_dim),
 		"vq-2" : cVQVAE_2(in_channel=1),
-		"avg-interp" : AvgInterpolation()
+		"avg-interp" : AvgInterpolation(),
+		"mne-interp" : MNEInterpolation(), 
 	}
 
 
 	length = lengths[model_name]
 	model = models[model_name]
 
-	select_channels = [3,4,5]
+	if model_name == "mne-interp":
+		select_channels = [0,1,2,3]
+	else:
+		select_channels = [0,1,2]
 
 	train_files =  TRAIN_NORMAL_FILES_CSV #TRAIN_FILES_CSV 
 	train_dataset = EEGDatasetMc(train_files, max_num_examples=num_examples_train, length=length, normalize=normalize, select_channels=select_channels)
@@ -92,7 +98,7 @@ def main():
 
 	if sched == 'cycle':
 		scheduler = CycleScheduler(
-			optimizer, args.lr, n_iter=len(loader) * args.epoch, momentum=None
+			optimizer, lr, n_iter=len(train_loader) * num_epochs, momentum=None
 		)
 	for i in range(1, num_epochs + 1):
 		if train_model:
