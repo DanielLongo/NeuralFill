@@ -26,9 +26,10 @@ from conv_VAE import ConvVAE
 from VAE1c import VAE1c
 from vqvae import VQVAE_2
 from VQ_VAE_1c import VQVAE
+from unet import UNet
 
 def main():
-	model_name = "nn"
+	model_name = "cnn"
 	z_dim = 30
 	lr = 1e-3
 	sched = None
@@ -42,13 +43,14 @@ def main():
 	normalize = True
 	
 	log_interval = 2
-	tb_save_loc = "runs/compare/"
+	tb_save_loc = "runs/testing/"
 
 	lengths = {
 		"nn" : 784,
 		"cnn" : 784,
 		"vq" : 784,
 		"vq-2" : 1024,
+		"unet" : 1024,
 	}
 
 	models = {
@@ -56,6 +58,7 @@ def main():
 		"cnn" : ConvVAE(num_channels=1, z_dim=z_dim),
 		"vq" : VQVAE(hidden=z_dim),
 		"vq-2" : VQVAE_2(in_channel=1),
+		"unet" : UNet()
 	}
 
 

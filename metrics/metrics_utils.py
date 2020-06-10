@@ -117,14 +117,21 @@ def get_recon_metrics(x, recon_x):
 	hist_diff = get_recon_diff_hist(x, recon_x)
 	return fft_diff, hist_diff
 
-def save_checkpoint_metrics(writer, model, sample, save_filename, epoch, iteration, loss, recon_loss, prefix, sample_size=16):
+def save_checkpoint_metrics(writer, model, sample, save_filename, epoch, iteration, loss, recon_loss, prefix, sample_size=16, noisy_labels=None):
 	with torch.no_grad():
-		out = model(sample)
+		if noisy_labels is None:
+			out = model(sample)
+		else:
+			out = model(sample, noisy_labels=noisy_labels)
 		reconstructed = out[0]
 		reconstructed, sample = torch.squeeze(reconstructed).cpu().numpy(), torch.squeeze(sample).cpu().numpy()
 		# reconstructed, sample = reconstructed.view(reconstructed.shape[0], -1).cpu().numpy(), sample.view(reconstructed.shape[0], -1).cpu().numpy()
 
-		if len(sample.shape) == 3:
+		if len(sample.shape) == 3 and len(reconstructed.shape) == 3:
+			# both sample and reconstructed have multiple channels
+			combined = np.concatenate((sample[:sample_size], reconstructed[:sample_size]))
+
+		elif len(sample.shape) == 3:
 			# the sample has multiple channels so must expand dim of reconstructed for vstack
 			reconstructed = reconstructed.reshape((reconstructed.shape[0], 1, -1))
 			combined = np.concatenate((sample[:sample_size], reconstructed[:sample_size]), axis=1)

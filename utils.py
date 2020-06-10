@@ -93,6 +93,9 @@ def find_valid_filename(target_filename, file_dir):
 		return find_valid_filename(target_filename + '_r1', file_dir)
 	return target_filename
 
+def check_valid_filename(filename):
+	return os.path.exists(filename)
+
 
 
 
