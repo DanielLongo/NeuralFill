@@ -148,4 +148,15 @@ def save_checkpoint_metrics(writer, model, sample, save_filename, epoch, iterati
 		writer.add_scalar(prefix + '/recon loss', recon_loss, iteration)
 		writer.add_scalar(prefix + '/loss', loss, iteration)
 
+def get_fft(x):
+	fft_x = np.fft.fft(x)
+	return fft_x/np.sum(fft_x)
+
+def get_hist(x, n_bins=100, range=(-2000,2000)):
+	signals_a = x.reshape(-1)
+	hist_a, _ = np.histogram(signals_a, bins=n_bins, range=range)
+	# hist_a = hist_a / np.linalg.norm(hist_a)
+	return hist_a
+
+
 
