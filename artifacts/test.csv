@@ -1,0 +1,201 @@
+Annotation,Count
+RhythmicBurst F3-F7,2820
+RhythmicBurst F7-T3,2667
+Spike T5-aT5 1.00,1660
+Spike T3-aT3 1.00,1368
+A1+A2 OFF,989
+Spike T6-aT6 1.00,858
+RhythmicBurst C3-F3,852
+Spike T4-aT4 1.00,749
+Spike F3-aF3 1.00,739
+Spike O1-aO1 1.00,643
+REC START DB EEG,522
+RhythmicBurst T3-T5,520
+RhythmicBurst T4-T6,493
+Spike Cz-aCz 1.00,431
+Spike C4-aC4 1.00,416
+RhythmicBurst F8-T4,371
+PUSH BUTTON,354
+RhythmicBurst C4-F4,289
+Spike F7-aF7 1.00,283
+Spike Fz-aFz 1.00,266
+Spike F8-aF8 1.00,264
+Spike Fp2-aFp2 1.00,253
+Spike O2-aO2 1.00,237
+RhythmicBurst F4-F8,233
+Spike P3-aP3 1.00,220
+Spike C3-aC3 1.00,204
+Spike F4-aF4 1.00,195
+Spike P4-aP4 1.00,175
+Spike Fp1-aFp1 1.00,156
+Spike T3-aT3 0.99,151
+Spike T3-aT3 0.83,149
+Spike T3-aT3 0.98,144
+Spike T3-aT3 0.85,143
+Spike T3-aT3 0.97,141
+Spike T3-aT3 0.84,141
+Spike T3-aT3 0.95,133
+Spike T3-aT3 0.82,129
+Spike T3-aT3 0.93,127
+Spike T3-aT3 0.86,123
+Spike T3-aT3 0.96,118
+Spike T3-aT3 0.81,117
+Spike Pz-aPz 1.00,116
+Spike T3-aT3 0.87,116
+IMP CHECK ON,116
+IMP CHECK OFF,116
+Spike T3-aT3 0.94,116
+Spike T3-aT3 0.88,115
+Spike T3-aT3 0.92,114
+Spike T3-aT3 0.80,113
+Spike T3-aT3 0.91,109
+Spike T3-aT3 0.89,109
+Spike T3-aT3 0.90,106
+Spike T4-aT4 0.99,99
+Spike T5-aT5 0.99,99
+MARK ON,93
+Spike T3-aT3 0.71,92
+,91
+REC START IA/DB EEG,86
+Spike T3-aT3 0.68,84
+Spike T3-aT3 0.75,83
+Spike T3-aT3 0.70,82
+Spike T3-aT3 0.77,82
+Spike T3-aT3 0.78,82
+Spike T4-aT4 0.97,82
+Spike T3-aT3 0.79,81
+Spike T6-aT6 0.99,80
+Spike T5-aT5 0.98,80
+Spike T3-aT3 0.74,78
+REC START A_DB EEG,78
+Spike Cz-aCz 0.54,76
+Spike T3-aT3 0.63,76
+Spike T3-aT3 0.66,74
+Spike F3-aF3 0.99,74
+Spike T6-aT6 0.97,72
+Spike T3-aT3 0.64,71
+Spike T3-aT3 0.69,71
+Spike T3-aT3 0.76,71
+Spike Cz-aCz 0.51,70
+Spike T4-aT4 0.94,70
+Spike F3-aF3 0.53,69
+Spike T5-aT5 0.92,69
+eyes closed,68
+Spike T4-aT4 0.81,68
+Spike Cz-aCz 0.55,67
+Spike F3-aF3 0.96,67
+Spike F3-aF3 0.98,67
+Spike T4-aT4 0.95,67
+REC START NEONATE EE,66
+Spike O1-aO1 0.53,66
+Spike T6-aT6 0.93,66
+Spike T3-aT3 0.62,66
+REC START 1-NEONATE,66
+Spike T3-aT3 0.73,66
+Spike T5-aT5 0.96,66
+Spike T4-aT4 0.96,66
+Spike T6-aT6 0.98,66
+Spike T4-aT4 0.87,65
+Spike T3-aT3 0.67,65
+Spike O1-aO1 0.57,64
+Spike F3-aF3 0.91,64
+Spike T5-aT5 0.95,64
+Spike F3-aF3 0.90,64
+Spike T3-aT3 0.61,64
+Spike T3-aT3 0.60,64
+Spike T5-aT5 0.93,63
+Spike F3-aF3 0.58,63
+Spike F3-aF3 0.93,63
+Spike T3-aT3 0.59,63
+Spike Cz-aCz 0.53,63
+Spike T4-aT4 0.93,62
+Spike O1-aO1 0.51,61
+Spike Cz-aCz 0.71,61
+Spike Cz-aCz 0.52,61
+Spike T3-aT3 0.72,61
+Spike F3-aF3 0.95,61
+Spike T3-aT3 0.57,61
+Spike F3-aF3 0.54,61
+Spike T3-aT3 0.65,60
+Spike T3-aT3 0.56,60
+Spike T4-aT4 0.85,60
+Spike F3-aF3 0.81,60
+Spike T4-aT4 0.90,60
+Spike T4-aT4 0.80,60
+SpikeBurst 1.00 1s,59
+Spike Cz-aCz 0.72,59
+Spike Cz-aCz 0.61,58
+Spike T5-aT5 0.90,58
+Eyes closed,58
+Spike T6-aT6 0.95,57
+Spike F3-aF3 0.94,57
+Spike Cz-aCz 0.67,56
+Spike T6-aT6 0.96,56
+Spike F3-aF3 0.60,56
+Spike T5-aT5 0.97,56
+Spike T3-aT3 0.54,56
+Spike T4-aT4 0.98,56
+Spike T3-aT3 0.55,56
+Spike F3-aF3 0.88,55
+Spike T5-aT5 0.91,55
+Spike F3-aF3 0.89,55
+REC START DB CAL,54
+Spike O1-aO1 0.55,54
+Spike T4-aT4 0.82,54
+Spike T5-aT5 0.94,54
+Spike T4-aT4 0.86,54
+Spike T4-aT4 0.88,54
+Spike T4-aT4 0.78,54
+Spike F3-aF3 0.65,54
+Spike T3-aT3 0.58,54
+Spike F3-aF3 0.66,54
+Spike F7-aF7 0.51,53
+Spike Cz-aCz 0.63,53
+Spike T5-aT5 0.78,53
+Spike T5-aT5 0.86,53
+MARK OFF,53
+Spike Cz-aCz 0.57,53
+Eyes open,53
+Spike T4-aT4 0.79,53
+Spike T4-aT4 0.73,53
+Spike F3-aF3 0.92,52
+Spike O1-aO1 0.60,52
+Spike O1-aO1 0.61,52
+Spike Cz-aCz 0.73,52
+Spike O1-aO1 0.74,51
+Spike O1-aO1 0.63,51
+Spike O1-aO1 0.52,51
+Spike T4-aT4 0.77,51
+Spike Cz-aCz 0.56,51
+Spike T5-aT5 0.81,51
+Spike F3-aF3 0.55,51
+Spike T6-aT6 0.92,51
+Spike T5-aT5 0.88,51
+Spike T5-aT5 0.56,51
+Spike O1-aO1 0.86,50
+?,50
+Spike T3-aT3 0.52,50
+Spike T4-aT4 0.89,50
+Spike O1-aO1 0.89,49
+Spike O1-aO1 0.98,49
+Spike Cz-aCz 0.70,49
+Spike Cz-aCz 0.60,49
+Spike Cz-aCz 0.59,49
+Spike T5-aT5 0.84,49
+Spike T3-aT3 0.53,49
+Spike O1-aO1 0.76,48
+Spike Cz-aCz 0.74,48
+Spike T5-aT5 0.89,48
+Spike Cz-aCz 0.66,48
+Spike Cz-aCz 0.64,48
+squirming,48
+Spike O1-aO1 0.56,47
+Spike O1-aO1 0.92,47
+Spike F7-aF7 0.64,47
+Spike F3-aF3 0.51,47
+Spike T4-aT4 0.61,47
+Spike T4-aT4 0.71,47
+Spike T4-aT4 0.84,47
+Spike T3-aT3 0.51,47
+Spike T4-aT4 0.64,47
+eyes open,47
