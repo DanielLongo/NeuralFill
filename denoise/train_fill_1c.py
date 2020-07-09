@@ -29,6 +29,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, writer, log_interv
 
 	running_loss = 0
 	running_recon_loss = 0
+	num_examples = 0
 
 	add_channels_distorted = model_is_conditional(model)
 
@@ -83,6 +84,8 @@ def train(epoch, loader, model, optimizer, scheduler, device, writer, log_interv
 		running_recon_loss += (recon_loss.item() * signals.shape[0]) / signals.shape[0]
 		running_loss += (loss.item() * signals.shape[0]) / signals.shape[0]
 
+		num_examples += signals.shape[0]
+
 		if i % log_interval == 0 and i != 0:
 			model.eval()
 
@@ -95,14 +98,15 @@ def train(epoch, loader, model, optimizer, scheduler, device, writer, log_interv
 				save_filename=save_filename,
 				epoch=epoch,
 				iteration=epoch * len(loader) + i,
-				loss=running_loss / (log_interval * num_channels), 
-				recon_loss=running_recon_loss / (log_interval * num_channels),
+				loss=running_loss / num_examples, 
+				recon_loss=running_recon_loss / num_examples,
 				prefix='train',
 				noisy_labels=channels_distorted
 			)
 
 			running_recon_loss = 0
 			running_loss = 0
+			num_examples = 0
 			model.train()
 
 def eval(epoch, loader, model, device, writer, log_interval=10,  criterion=nn.L1Loss(), save_filename="results_fill/sample"):
@@ -118,6 +122,8 @@ def eval(epoch, loader, model, device, writer, log_interval=10,  criterion=nn.L1
 	running_recon_loss = 0
 
 	add_channels_distorted = model_is_conditional(model)
+
+	num_examples = 0
 
 	with torch.no_grad():
 		for i, (signals) in enumerate(loader):
@@ -156,8 +162,10 @@ def eval(epoch, loader, model, device, writer, log_interval=10,  criterion=nn.L1
 				)
 			)
 
-			running_recon_loss += (recon_loss.item() * signals.shape[0]) / signals.shape[0]
-			running_loss += (loss.item() * signals.shape[0]) / signals.shape[0]
+			running_recon_loss += recon_loss.item() #(recon_loss.item() * signals.shape[0]) / signals.shape[0]
+			running_loss += loss.item() #(loss.item() * signals.shape[0]) / signals.shape[0]
+			num_examples += signals.shape[0]
+
 
 
 			if i % log_interval == 0:
@@ -171,11 +179,12 @@ def eval(epoch, loader, model, device, writer, log_interval=10,  criterion=nn.L1
 					save_filename=save_filename,
 					epoch=epoch,
 					iteration=epoch * len(loader) + i,
-					loss=running_loss / (log_interval * num_channels), 
-					recon_loss=running_recon_loss / (log_interval * num_channels),
+					loss=running_loss / num_examples, 
+					recon_loss=running_recon_loss / num_examples,
 					prefix='eval',
 					noisy_labels=channels_distorted,
 				)
 
 				running_recon_loss = 0
 				running_loss = 0
+				num_examples = 0

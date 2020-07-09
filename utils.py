@@ -2,6 +2,10 @@ import numpy as np
 import torch
 from torch.nn import functional as F
 import os
+from shutil import copyfile
+import json
+import time
+import os
 
 # Reconstruction + KL divergence losses summed over all elements and batch
 def loss_function_vanilla(recon_x, x, mu, logvar):
@@ -95,6 +99,40 @@ def find_valid_filename(target_filename, file_dir):
 
 def check_valid_filename(filename):
 	return os.path.exists(filename)
+
+
+def save_run(save_dir, python_files, model, info_dict):
+	"""
+	Each run saved consitis of:
+		- relavant python files
+		- saved model
+		- info (json)
+		- tb file 
+	"""
+	assert(save_dir.split("/")[1:4] == ["mnt", "home2", "dlongo"]), "must save run to local dir"
+
+	os.mkdir(save_dir)
+	for file in python_files:
+		filename = file.split("/")[-1]
+		copyfile(file, save_dir + filename)
+
+	torch.save(model, save_dir + "model.pt")
+
+	info_dict["timestamp"] = int(time.time())
+	with open(save_dir + "info.json", "w") as file:
+		json.dump(info_dict, file)
+
+	# Copy tb file and dir
+	tb_dirpath = info_dict["tb_dirpath"]
+	tb_dirname = tb_dirpath.split("/")[-1] + "/"
+	
+	tb_files = os.listdir(tb_dirpath)
+	assert(len(tb_files) == 1), "there should only be one tb file " + str(tb_files)
+	tb_file = tb_files[0]
+
+	os.mkdir(save_dir + tb_dirname)
+	copyfile(tb_dirpath + "/" +tb_file, save_dir + tb_dirname + tb_file)
+	print("SAVED:", save_dir)
 
 
 

@@ -15,6 +15,7 @@ def train(epoch, loader, model, optimizer, scheduler, device, writer, log_interv
 
 	running_loss = 0
 	running_recon_loss = 0
+	num_examples = 0
 
 	for i, (signals) in enumerate(loader):
 		model.zero_grad()
@@ -48,6 +49,8 @@ def train(epoch, loader, model, optimizer, scheduler, device, writer, log_interv
 		running_recon_loss += recon_loss.item()
 		running_loss += loss.item()
 
+		num_examples += signals.shape[0]
+
 		if i % log_interval == 0:
 			model.eval()
 
@@ -58,14 +61,16 @@ def train(epoch, loader, model, optimizer, scheduler, device, writer, log_interv
 				save_filename=save_filename,
 				epoch=epoch,
 				iteration=epoch * len(loader) + i,
-				loss=running_loss / log_interval, 
-				recon_loss=running_recon_loss / log_interval,
+				loss=running_loss / num_examples, 
+				recon_loss=running_recon_loss / num_examples,
 				prefix='train',
 			)
 
 			running_recon_loss = 0
 			running_loss = 0
+			num_examples = 0
 			model.train()
+
 
 def eval(epoch, loader, model, device, writer, log_interval=10,  criterion=nn.MSELoss(reduction='mean'), save_filename="results_recon/sample"):
 	model.eval()
@@ -78,6 +83,7 @@ def eval(epoch, loader, model, device, writer, log_interval=10,  criterion=nn.MS
 
 	running_loss = 0
 	running_recon_loss = 0
+	num_examples = 0
 
 	with torch.no_grad():
 		for i, (signals) in enumerate(loader):
@@ -103,13 +109,8 @@ def eval(epoch, loader, model, device, writer, log_interval=10,  criterion=nn.MS
 			running_recon_loss += recon_loss.item()
 			running_loss += loss.item()
 
+			num_examples += signals.shape[0]
 			if i % log_interval == 0:
-				if i != 0:
-					# take the average of running loss
-					running_loss /= log_interval
-					running_recon_loss /= log_interval
-
-
 				save_checkpoint_metrics(
 					writer=writer,
 					model=model,
@@ -117,10 +118,11 @@ def eval(epoch, loader, model, device, writer, log_interval=10,  criterion=nn.MS
 					save_filename=save_filename,
 					epoch=epoch,
 					iteration=epoch * len(loader) + i,
-					loss=running_loss, 
-					recon_loss=running_recon_loss,
+					loss=running_loss/num_examples, 
+					recon_loss=running_recon_loss/num_examples,
 					prefix='eval',
 				)
 
 				running_recon_loss = 0
 				running_loss = 0
+				num_examples = 0

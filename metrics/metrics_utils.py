@@ -5,6 +5,9 @@ import random
 import sys
 import matplotlib.pyplot as plt
 import torch
+from scipy.fftpack import fft, ifft
+from torch.nn import functional as F
+from utils import custom_norm
 
 def get_samples_real_stack(dataset, n=-1):
 	# reutns all examples of dataset in a singe batch
@@ -142,11 +145,17 @@ def save_checkpoint_metrics(writer, model, sample, save_filename, epoch, iterati
 		np.save(save_filename + "-" + prefix + "-" + str(epoch), combined)
 
 		fft_diff, hist_diff = get_recon_metrics(reconstructed, sample)
+		mse_diff, low_feq_diff, high_feq_diff = get_diff_vary_freq_batch(reconstructed, sample)
+		psd_diff = get_psd_dff_batch(reconstructed, sample)
 
-		writer.add_scalar(prefix + '/fft diff', fft_diff, iteration)
+		# writer.add_scalar(prefix + '/fft diff', fft_diff, iteration)
 		writer.add_scalar(prefix + '/hist diff', hist_diff, iteration)
 		writer.add_scalar(prefix + '/recon loss', recon_loss, iteration)
 		writer.add_scalar(prefix + '/loss', loss, iteration)
+		writer.add_scalar(prefix + '/psd diff', psd_diff, iteration)
+		# writer.add_scalar(prefix + '/mse diff', mse_diff, iteration)
+		# writer.add_scalar(prefix + '/low freq diff', low_feq_diff, iteration)
+		# writer.add_scalar(prefix + '/high freq diff', high_feq_diff, iteration)
 
 def get_fft(x):
 	fft_x = np.fft.fft(x)
@@ -158,5 +167,51 @@ def get_hist(x, n_bins=100, range=(-2000,2000)):
 	# hist_a = hist_a / np.linalg.norm(hist_a)
 	return hist_a
 
+def remove_high_freq(x):
+	y = fft(x)
+	y[x.shape[-1] // 10: x.shape[-1] // 2 + x.shape[-1] // 2] = 0
+	return ifft(y).real
 
+def remove_low_freq(x):
+	y = fft(x)
+	y[:x.shape[-1] // 8] = 0
+	y[x.shape[-1] // 8 + x.shape[-1] // 2: ] = 0
+	return ifft(y).real
+def np_mse(a, b):
+	# diff = F.binary_cross_entropy(custom_norm(torch.from_numpy(a)), custom_norm(torch.from_numpy(b)))
+	# return diff.item()
+	return np.square(a - b).mean()
+
+def get_diff_vary_freq(x, recon_x, criterion=np_mse):
+	diff = criterion(x, recon_x)
+	diff_low_freq = criterion(remove_high_freq(x), remove_high_freq(recon_x))
+	diff_high_freq = criterion(remove_low_freq(x), remove_low_freq(recon_x))
+	return diff, diff_low_freq, diff_high_freq
+
+def get_diff_vary_freq_batch(batch_x, batch_recon_x, criterion=np_mse):
+	assert(batch_x.shape[0] == batch_recon_x.shape[0])
+	diff, diff_low_freq, diff_high_freq = [], [], []
+	for i in range(batch_x.shape[0]):
+		x = batch_x[i]
+		recon_x = batch_recon_x[i]
+		cur_diff = criterion(x, recon_x)
+		cur_diff_low_freq = criterion(remove_high_freq(x), remove_high_freq(recon_x))
+		cur_diff_high_freq = criterion(remove_low_freq(x), remove_low_freq(recon_x))
+		diff.append(cur_diff)
+		diff_low_freq.append(cur_diff_low_freq)
+		diff_high_freq.append(cur_diff_high_freq)
+	diff = sum(diff) / len(diff)
+	diff_low_freq = sum(diff_low_freq) / len(diff_low_freq)
+	diff_high_freq = sum(diff_high_freq) / len(diff_high_freq)
+	return diff, diff_low_freq, diff_high_freq
+
+def get_psd_diff(original, recon, fs=200):
+	f, Pxx = scipy.signal.periodogram(np.vstack((original,recon)), fs)
+	return np.sum(abs(Pxx[0] - Pxx[1])) / original.shape[-1]
+
+def get_psd_dff_batch(original_batch, reconstructed_batch, fs=200):
+	differences = []
+	for orig, recon in zip(original_batch, reconstructed_batch):
+		differences.append(get_psd_diff(orig, recon, fs=fs))
+	return sum(differences) / len(differences)
 
