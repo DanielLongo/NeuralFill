@@ -60,8 +60,8 @@ class VQVAE(nn.Module):
         if self.cuda():
             sample = sample.cuda()
         emb, _ = self.emb(sample)
-        sample = self.decode(emb(sample).view(-1, self.hidden)).cpu()
-        return sample
+        sample = self.decode(emb.view(-1, self.hidden)).cpu()
+        return sample.detach().numpy()
 
     def loss_function(self, signals, outputs):
         recon_x, z_e, emb = outputs

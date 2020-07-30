@@ -34,7 +34,8 @@ from cvqvae import cVQVAE_2
 
 def main():
 	# model_name = "mne-interp-mc"
-	model_name = "vq-2-mc"
+	# model_name = "vq-2-mc"
+	model_name = "nn"
 	# model_name = "cvq-2-mc"
 	# model_name = HOME_PATH + "reconstruction/saved_models/" + "vq-2-mc"
 
@@ -46,7 +47,8 @@ def main():
 
 	z_dim = 30
 	lr = 1e-3
-	sched = 'cycle'
+	# sched = 'cycle'
+	sched = None
 
 	num_epochs = 200
 	batch_size = 64
@@ -57,7 +59,7 @@ def main():
 	normalize = True
 	log_interval = 1
 	tb_save_loc = "runs/testing/"
-	select_channels = [0,1] #[0,1,2,3]
+	select_channels = [0] #[0,1,2,3]
 	num_channels = len(select_channels)
 
 	lengths = {
@@ -119,12 +121,12 @@ def main():
 		# select_channels = [0,1,2]
 		# select_channels = [0,1]#,2,3]
 
-	# train_files =  TRAIN_NORMAL_FILES_CSV #TRAIN_FILES_CSV 
-	train_files =  TRAIN_FILES_CSV 
+	train_files =  TRAIN_NORMAL_FILES_CSV #TRAIN_FILES_CSV 
+	# train_files =  TRAIN_FILES_CSV 
 
 
-	# eval_files =  DEV_NORMAL_FILES_CSV #DEV_FILES_CSV 
-	eval_files =  DEV_FILES_CSV 
+	eval_files =  DEV_NORMAL_FILES_CSV #DEV_FILES_CSV 
+	# eval_files =  DEV_FILES_CSV 
 	eval_dataset = EEGDatasetMc(eval_files, max_num_examples=num_examples_eval, length=length, normalize=normalize, select_channels=select_channels)
 	eval_loader = DataLoader(eval_dataset, batch_size=batch_size, shuffle=True)
 	

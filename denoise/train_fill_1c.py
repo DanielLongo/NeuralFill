@@ -7,9 +7,25 @@ from inspect import signature
 import sys
 sys.path.append("../")
 sys.path.append("../metrics/")
+sys.path.append("../artifacts")
 
+from synthetic_artifacts_1c import SyntheticArtifiactsLabeled1c
 from metrics_utils import save_checkpoint_metrics
 from utils import reduce_channel_batch
+
+target_artifacts = {
+		"no signal": False,
+		"60hz noise": False,
+		"blink": True
+		}
+blinks = SyntheticArtifiactsLabeled1c(20, length=1024, target_artifacts=target_artifacts)
+
+def distort_channel_batch(signals, distorted_channel_index):
+	for i in range(signals.shape[0]):
+		cur_blinks = torch.from_numpy(blinks[random.randint(0,19)][0]).cuda()
+		signals[i][distorted_channel_index] = (signals[i][distorted_channel_index] + cur_blinks) / 2
+	return signals
+
 def model_is_conditional(model):
 	# checks if model recieves conditional labels marking bad channels
 	sig = signature(model.forward)
@@ -40,7 +56,9 @@ def train(epoch, loader, model, optimizer, scheduler, device, writer, log_interv
 	
 		signals = signals.to(device).view(signals.shape[0], signals.shape[1], -1)
 		target_channel = signals[:, distorted_channel_index, :]
-		signals_reduced = reduce_channel_batch(signals, distorted_channel_index, a=0) # reduce distorted channel to 0
+
+		# signals_reduced = reduce_channel_batch(signals, distorted_channel_index, a=0) # reduce distorted channel to 0
+		signals_reduced = distort_channel_batch(signals, distorted_channel_index)
 		
 		if add_channels_distorted:
 			channels_distorted = [0 for i in range(signals.shape[1])]
@@ -131,7 +149,8 @@ def eval(epoch, loader, model, device, writer, log_interval=10,  criterion=nn.L1
 			
 			signals = signals.to(device).view(signals.shape[0], signals.shape[1], -1)
 			target_channel = signals[:, distorted_channel_index, :]
-			signals_reduced = reduce_channel_batch(signals, distorted_channel_index, a=0) # reduce distorted channel to 0
+			# signals_reduced = reduce_channel_batch(signals, distorted_channel_index, a=0) # reduce distorted channel to 0
+			signals_reduced = distort_channel_batch(signals, distorted_channel_index)
 
 			if add_channels_distorted:
 				channels_distorted = [0 for i in range(signals.shape[1])]

@@ -13,6 +13,7 @@ class VAE1c(nn.Module):
 		self.fc22 = nn.Linear(400, z_dim)
 		self.fc3 = nn.Linear(z_dim, 400)
 		self.fc4 = nn.Linear(400, 784)
+		self.z_dim = z_dim
 
 	def encode(self, x):
 		# x = torch.squeeze(x)
@@ -35,7 +36,7 @@ class VAE1c(nn.Module):
 
 	def loss_function(self, signals, outputs):
 		recon_x, mu, logvar = outputs
-		BCE = F.binary_cross_entropy(recon_x.view(recon_x.shape[0], -1), signals.view(signals.shape[0], -1)) # , reduction='sum')
+		BCE = F.binary_cross_entropy(recon_x.view(recon_x.shape[0], -1), signals.view(signals.shape[0], -1) , reduction='sum')
 		
 		# see Appendix B from VAE paper:
 		# Kingma and Welling. Auto-Encoding Variational Bayes. ICLR, 2014
@@ -43,6 +44,13 @@ class VAE1c(nn.Module):
 		# 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
 		KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
 		return BCE + KLD
+
+	def sample(self, num_samples):
+		z = torch.randn(num_samples, self.z_dim)
+		if torch.cuda.is_available():
+			z = z.cuda()
+		out = self.decode(z) 
+		return out.view(num_samples, -1).detach().cpu().numpy()
 
 if __name__ == "__main__":
 	model = VAE1c()
