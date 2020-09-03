@@ -1,6 +1,7 @@
 import csv
 import os 
 import h5py
+import torch
 
 def load_eeg_file(filename):
 	hdf = h5py.File(filename, "r")
@@ -37,6 +38,18 @@ def get_recordings_from_csv(csv_filename):
 		out.append({"filename": entry[0], "start_pos": entry[1]})
 	return out
 
+def normalize(x):
+	# return torch.sigmoid((x + 2000)/4000)
+	return (x-x.min())/(x.max()-x.min())
 
+def scale(x, d=2000):
+	x /= d
+	x = .5 + ((torch.tanh(x))/2)
+	return x
 
-
+def standardize(x):
+#	 mean = torch.mean(x.view(-1))
+	mean = -6.066188 # overall mean
+#	 std = torch.std(x.view(-1))
+	std = 660 # overall std
+	return (x-mean)/(std)

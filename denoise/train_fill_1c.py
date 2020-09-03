@@ -12,17 +12,18 @@ sys.path.append("../artifacts")
 from synthetic_artifacts_1c import SyntheticArtifiactsLabeled1c
 from metrics_utils import save_checkpoint_metrics
 from utils import reduce_channel_batch
+from data import normalize
 
 target_artifacts = {
 		"no signal": False,
-		"60hz noise": False,
+		"60hz noise": True,
 		"blink": True
-		}
-blinks = SyntheticArtifiactsLabeled1c(20, length=1024, target_artifacts=target_artifacts)
+	}
+blinks = SyntheticArtifiactsLabeled1c(20, length=784, target_artifacts=target_artifacts, normalize=normalize, label=False)
 
 def distort_channel_batch(signals, distorted_channel_index):
 	for i in range(signals.shape[0]):
-		cur_blinks = torch.from_numpy(blinks[random.randint(0,19)][0]).cuda()
+		cur_blinks = (blinks[random.randint(0,19)][0]).cuda()
 		signals[i][distorted_channel_index] = (signals[i][distorted_channel_index] + cur_blinks) / 2
 	return signals
 
@@ -76,6 +77,9 @@ def train(epoch, loader, model, optimizer, scheduler, device, writer, log_interv
 
 			# multiple channels generated and want to compare all channels
 			target_channel = signals
+
+		reconstructed = torch.squeeze(reconstructed)
+		target_channel = torch.squeeze(target_channel)
 
 		recon_loss = criterion(reconstructed, target_channel)
 		loss = model.loss_function(target_channel, outputs)
@@ -167,6 +171,10 @@ def eval(epoch, loader, model, device, writer, log_interval=10,  criterion=nn.L1
 
 				# multiple channels generated and want to compare all channels
 				target_channel = signals
+
+
+			reconstructed = torch.squeeze(reconstructed)
+			target_channel = torch.squeeze(target_channel)
 				
 			recon_loss = criterion(reconstructed, target_channel)
 			loss = model.loss_function(target_channel, outputs)

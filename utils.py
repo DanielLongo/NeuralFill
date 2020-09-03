@@ -120,7 +120,7 @@ def save_run(save_dir, python_files, model, info_dict):
 
 	info_dict["timestamp"] = int(time.time())
 	with open(save_dir + "info.json", "w") as file:
-		json.dump(info_dict, file)
+		json.dump(dict(info_dict), file)
 
 	# Copy tb file and dir
 	tb_dirpath = info_dict["tb_dirpath"]

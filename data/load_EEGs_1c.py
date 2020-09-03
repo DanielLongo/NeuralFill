@@ -66,18 +66,24 @@ class EEGDataset1c(data.Dataset):
 		# 1e3
 		# print('(torch.abs(cur_tensor).mean())', (torch.abs(cur_tensor).mean()))
 
-		if self.normalize:
-			abs_mean = (torch.abs(cur_tensor).mean())
-			if abs_mean == 0:
-				return cur_tensor
-			cur_tensor = cur_tensor/(abs_mean)
-			cur_tensor = (torch.tanh(cur_tensor) + 1)/2
+		if self.normalize != False:
+			cur_tensor = self.normalize(cur_tensor)
+			# abs_mean = (torch.abs(cur_tensor).mean())
+			# if abs_mean == 0:
+				# return cur_tensor
+			# cur_tensor = cur_tensor/(abs_mean)
+			# cur_tensor = self.normalize_recording(cur_tensor)
+			# cur_tensor = (torch.tanh(cur_tensor) + 1)/2 # scales between 0 and 1
+
 
 		# cur_tensor = (F.tanh(cur_tensor/5e2) + 1)/2
 		return cur_tensor
 
+	def normalize_recording(self, x):
+		return (x - x.min())/(x.max()-x.min())
+
 if __name__ == "__main__":
 	files_csv = "./dataset_csv/sample_file.csv"
-	dataset = EEGDataset1c(files_csv, max_num_examples=100*10*2)
+	dataset = EEGDataset1c(files_csv, max_num_examples=1*1*2)
 	print("Length", len(dataset))
 	print("Sample Shape", dataset[0].shape)

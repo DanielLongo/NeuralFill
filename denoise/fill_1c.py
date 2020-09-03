@@ -25,11 +25,14 @@ from train_fill_1c import train, eval
 
 from conv_VAE import ConvVAE
 from fill_baseline_models import AvgInterpolation, MNEInterpolation, MNEInterpolationMC
+from VAE1c import VAE1c
 from cVAE1c import cVAE1c
 from cvqvae import cVQVAE_2
 from unet import UNet
 from vqvae import VQVAE_2
 from cvqvae import cVQVAE_2
+
+from data import *
 # from VQ_VAE_1c import cVQVAE
 
 def main():
@@ -56,7 +59,7 @@ def main():
 	num_examples_eval = -1
 	
 	device = 'cuda'
-	normalize = True
+	# normalize = True
 	log_interval = 1
 	tb_save_loc = "runs/testing/"
 	select_channels = [0] #[0,1,2,3]
@@ -82,7 +85,8 @@ def main():
 	}
 
 	models = {
-		"nn" : cVAE1c(z_dim=z_dim),
+		# "nn" : cVAE1c(z_dim=z_dim),
+		"nn" : VAE1c(z_dim=z_dim),
 		"vq-2" : cVQVAE_2(in_channel=1),
 		"unet" : UNet(in_channels=num_channels),
 
@@ -188,13 +192,15 @@ def main():
 		"eval_files" : eval_files, 
 		
 		"device" : device,
-		"normalize" : normalize,
+		"normalize" : normalize.__name__,
 		
 		"log_interval" : log_interval,
 		"tb_dirpath" : tb_filename
 	}
 
 	save_run(save_dir, python_files, model, info_dict)
+	for key, value in info_dict.items():
+		print(key+":", value)
 
 if __name__ == "__main__":
 	main()

@@ -5,6 +5,7 @@ from mne_synthetic_artifacts import AddEOG
 import random
 from contextlib import contextmanager
 import sys, os
+import random
 
 # https://stackoverflow.com/questions/2125702/how-to-suppress-console-output-in-python
 @contextmanager
@@ -43,7 +44,7 @@ def suppress_stdout():
 
 class SyntheticArtifiactsLabeled1c(data.Dataset):
 
-	def __init__(self, num_examples, length=1000, sample_fs=250, label=True, normalize=True, target_artifacts=None):
+	def __init__(self, num_examples, length=1000, sample_fs=250, label=True, normalize=False, target_artifacts=None):
 
 		self.num_examples = num_examples
 		self.length = length
@@ -58,7 +59,8 @@ class SyntheticArtifiactsLabeled1c(data.Dataset):
 			self.target_artifacts = {
 			"no signal": True,
 			"60hz noise": True,
-			"blink": True
+			"blink": True,
+			"60hz and blink": False,
 		}
 
 		else:
@@ -69,8 +71,8 @@ class SyntheticArtifiactsLabeled1c(data.Dataset):
 
 	def load_examples(self):
 
-		zero_label, one_label, two_label = torch.zeros((10)), torch.zeros((10)), torch.zeros((10)) 
-		zero_label[0], one_label[1], two_label[2] = 1, 1, 1
+		zero_label, one_label, two_label, three_label = torch.zeros((10)), torch.zeros((10)), torch.zeros((10)), torch.zeros((10)) 
+		zero_label[0], one_label[1], two_label[2], three_label[3] = 1, 1, 1, 1
 
 		while len(self.examples) < self.num_examples:
 			
@@ -81,7 +83,7 @@ class SyntheticArtifiactsLabeled1c(data.Dataset):
 
 			# 60 hz noise
 			if self.target_artifacts["60hz noise"]:
-				self.examples.append(gen_sin(60, self.length).T)
+				self.examples.append(gen_sin(250, self.length).T)
 				self.labels.append(one_label)
 
 			# Eye Blink
@@ -89,31 +91,36 @@ class SyntheticArtifiactsLabeled1c(data.Dataset):
 				self.examples.append(gen_eog(self.length, self.blink_noisifier, self.sample_fs).reshape(1, self.length))
 				self.labels.append(two_label)
 
+			if self.target_artifacts["60hz and blink"]:
+				noise = gen_sin(250, self.length).T
+				blink = gen_eog(self.length, self.blink_noisifier, self.sample_fs).reshape(1, self.length)
+				b = random.randint(80, 120)
+				combined = ((noise/b) + blink*b) / 2
+				self.examples.append(combined)
+				self.labels.append(three_label)
+
+
 	def __len__(self):
 		return len(self.examples)
 
 	def __getitem__(self, index):
 		cur_tensor = torch.from_numpy(self.examples[index]).type('torch.FloatTensor')
 
-		if self.normalize:
-			abs_mean = (torch.abs(cur_tensor).mean())
-			if abs_mean == 0:
-				pass
-			else:
-				cur_tensor = cur_tensor/(abs_mean)
-				cur_tensor = (torch.tanh(cur_tensor) + 1)/2
+		if self.normalize != False:
+			cur_tensor = self.normalize(cur_tensor)
 
-		cur_tensor = cur_tensor.numpy()
+		cur_tensor = cur_tensor#.numpy()
 		if self.label:
 			cur_label = self.labels[index]
-			cur_label = cur_label.numpy()
+			cur_label = cur_label#.numpy()
 			return cur_tensor, cur_label
 		return cur_tensor
 
 
 
 def gen_sin(fs, length):
-	f0 = 1
+	# fs is sample rate
+	f0 = 60
 	t = np.arange(length)
 	sinusoid = np.sin(2*np.pi*t*(f0/fs))
 	sinusoid = np.expand_dims(sinusoid, axis=0).T
@@ -121,9 +128,14 @@ def gen_sin(fs, length):
 
 def gen_eog(length, blink_noisifier, sample_fs):
 	with suppress_stdout():
-		x = np.random.randn(4, length)
+		# x = np.random.randn(4, length)
+		x = np.zeros((4, length))
 		x = blink_noisifier.add_eog(x)
-	return x[random.randint(0,3)]
+	signal = x[random.randint(0,3)]
+	if np.sum(abs(signal)) == 0:
+		# some signals don't have blinks
+		return gen_eog(length, blink_noisifier, sample_fs)
+	return signal
 
 
 
