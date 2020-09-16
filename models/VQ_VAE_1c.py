@@ -65,7 +65,7 @@ class VQVAE(nn.Module):
 
     def loss_function(self, signals, outputs):
         recon_x, z_e, emb = outputs
-        self.ce_loss = F.binary_cross_entropy(recon_x, signals.view(-1, self.length))#, reduction='sum')
+        self.ce_loss = F.binary_cross_entropy(recon_x, signals.view(-1, self.length), reduction='sum')
         self.vq_loss = F.mse_loss(emb, z_e.detach().view(emb.shape[0], -1))
         self.commit_loss = F.mse_loss(z_e.view(emb.shape[0], -1), emb.detach())
 

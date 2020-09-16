@@ -141,7 +141,8 @@ def save_checkpoint_metrics(writer, model, sample, save_filename, epoch, iterati
 
 		else:
 			combined = np.vstack((sample[:sample_size], reconstructed[:sample_size]))
-			
+		
+		# print("saing", save_filename + "-" + prefix + "-" + str(epoch))
 		np.save(save_filename + "-" + prefix + "-" + str(epoch), combined)
 
 		fft_diff, hist_diff = get_recon_metrics(reconstructed, sample)
